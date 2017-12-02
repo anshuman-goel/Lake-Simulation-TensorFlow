@@ -1,0 +1,127 @@
+################################################################################
+
+Group info:
+agoel5 Anshuman Goel
+kgondha Kaustubh G Gondhalekar
+ndas Neha Das
+
+################################################################################
+
+
+Problem Objective: 
+Comparison of tensorflow and OpenMP/Nvidia CUDA with respect to lake simulation code.
+
+Compilation and Execution Instructions:
+(Refer to the HW description)
+
+Results/Discussion:
+
+python lake.py 512 40 400
+Elapsed time: 7.19218397141 seconds
+
+./lake.o 512 40 400
+Elapsed time: 0.575134 seconds
+
+There is a stark difference between the execution times of the runnning the native lake.o and its tensorflow equivalent. In tensorflow, there is an overhead of generating the data-flow graph and optimizing it. Also, the lake.o version runs natively on the C compiler, while the tensorflow version has to generate a native C code from the python code which adds to compiler overhead.
+
+
+Comparison across different parameters:
+
+Grid Size:
+
+python lake.py 256 40 400
+Elapsed time: 3.04989004135 seconds
+
+python lake.py 512 40 400
+Elapsed time: 7.19218397141 seconds
+
+python lake.py 1024 40 400
+Elapsed time: 23.8877089024 seconds
+
+
+./lake.o 256 4 400
+Elapsed time: 0.170698 seconds
+
+./lake.o 512 40 400
+Elapsed time: 0.575134 seconds
+
+./lake.o 1024 40 400
+Elapsed time: 2.122335 seconds
+
+The elapsed time increases exponentially for both the native and tensorflow versions when the Grid Size is increased.
+
+Number of pebbles:
+
+python lake.py 512 4 400
+Elapsed time: 7.20125794411 seconds
+
+python lake.py 512 40 400
+Elapsed time: 7.19552898407 seconds
+
+python lake.py 512 80 400
+Elapsed time: 7.17962598801 seconds
+
+./lake.o 512 4 400
+Elapsed time: 0.708726 seconds
+
+./lake.o 512 40 400
+Elapsed time: 0.565489 seconds
+
+./lake.o 512 80 400
+Elapsed time: 0.542965 seconds
+
+The elapsed time more or less remains the same when the number of pebbles is varied. This is because every grid has to be calculated for every iteration irrespective of its value.
+
+Number of iterations:
+
+python lake.py 512 40 200
+Elapsed time: 3.67310190201 seconds
+
+python lake.py 512 40 400
+Elapsed time: 7.18343901634 seconds
+
+python lake.py 512 40 800
+Elapsed time: 14.4787018299 seconds
+
+
+./lake.o 512 40 200
+Elapsed time: 0.288606 seconds
+
+./lake.o 512 40 400
+Elapsed time: 0.570816 seconds
+
+./lake.o 512 40 800
+Elapsed time: 1.067005 seconds
+
+The elapsed time increases linearly for both the native and tensorflow versions when the number of iterations is increased linearly.
+
+----------------Extra credit----------------
+
+All the code was run on GTX680 node (c6) which has a CUDA compute capability 3.0
+
+Modification to lakegpu.cu code:
+To perform a one-to-one comparison between the HW2 (V2) lakegpu.cu code and the tensorflow python code, the tpdt function was modified in the lakegpu.cu file. dt is fixed to 1.0 and 'endtime' is essentially the number of iterations for lakegpu.cu
+
+Timings:
+
+[kgondha@c6 P2]$ python lake.py 512 40 400
+Elapsed time: 4.69432806969 seconds
+
+[kgondha@c6 lakegpu]$ ./lake 512 40 400.0 1
+CPU took 15.143327 seconds
+GPU computation: 17.944288 msec
+GPU took 0.535679 seconds
+
+
+For tensorflow, using a 3.0 GPU compared to its equivalent CPU version, gives better performance results due to high level of GPU parallelism.
+
+The GPU lake code gives far better performance than the tensorflow code since the former runs natively on the GPUs while the latter has data-flow graph and optimization overheads. There is also compiler overhead for converting the python code into native code to run them on the GPU.
+
+
+------------------------------------------
+
+Lessons Learnt:
+
+TensorFlow has a complex architecture which produces some overheads while executing a problem. This makes it perform slower than native code ( OpenMP version ) but far easier to code and design complex problems at a higher level and leave the low-level specifics to tensorflow.
+
+
